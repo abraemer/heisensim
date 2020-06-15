@@ -12,14 +12,14 @@ up_x = 1/np.sqrt(2) * (up + down)
 up_y = 1/np.sqrt(2) * (up - down)
 
 
-def symmetrize_state(state, sign=1):
+def symmetrize_state(state):
     if isinstance(state, qt.Qobj):
         state = state.data.toarray()[:, 0]
     dim = state.shape[0]
     new_dim = dim // 2
     state_l = state[:new_dim]
     state_r = state[-1:new_dim - 1:-1]
-    state_sym = 1 / np.sqrt(2) * (state_l + sign * state_r)
+    state_sym = 1 / np.sqrt(2) * (state_l + state_r)
     if np.isreal(state_sym).all():
         return np.real(state_sym)
     return state_sym

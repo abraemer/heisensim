@@ -1,15 +1,32 @@
-import numpy as np
 from scipy.spatial.distance import pdist, squareform
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from heisensim.spin_half import *
 
 
 @dataclass()
 class InteractionParams(ABC):
-    @abstractmethod
+    normalization = None
+
     def get_interaction(self, *args):
+        int_mat = self._get_interaction(*args)
+        return self.normalize(int_mat, self.normalization)
+
+    @abstractmethod
+    def _get_interaction(self, *args):
         pass
+
+    @staticmethod
+    def normalize(int_mat, normalization):
+        if normalization is None:
+            return int_mat
+
+        mf = int_mat.sum(axis=1)
+        if normalization is 'mean':
+            int_mat /= np.mean(mf)
+        elif normalization is 'median':
+            int_mat /= np.median(mf)
+        return int_mat
 
 
 @dataclass()
@@ -17,7 +34,7 @@ class PowerLaw(InteractionParams):
     exponent: float = 6
     coupling: float = 1
 
-    def get_interaction(self, pos):
+    def _get_interaction(self, pos):
         coupling = self.coupling
         exponent = self.exponent
 
@@ -29,99 +46,137 @@ class PowerLaw(InteractionParams):
 
 
 class VanDerWaals(PowerLaw):
-    def __init__(self, coupling=1):
+    def __init__(self, coupling=1, normalization=None):
         self.coupling = coupling
         self.exponent = 6
+        self.normalization = normalization
 
 
 class DipoleCoupling(PowerLaw):
-    def __init__(self, coupling):
+    def __init__(self, coupling, normalization=None):
         self.coupling = coupling
         self.exponent = 3
+        self.normalization = normalization
+
+
+@dataclass()
+class XYZ:
+    xx: float = 1
+    yy: float = 1
+    zz: float = 1
+
+    def coupling(self, model, i, j):
+        N = model.N
+        return (
+                self.xx * model.correlator(sx, i, j)
+                + self.yy * model.correlator(sy, i, j)
+                + self.zz * model.correlator(sz, i, j)
+        )
+
+
+class XXZ(XYZ):
+    def __init__(self, delta):
+        super().__init__(1, 1, delta)
+
+
+class Ising(XYZ):
+    def __init__(self):
+        super().__init__(0, 0, 1)
+
+
+class XX(XYZ):
+    def __init__(self):
+        super().__init__(1, 1,  0)
 
 
 class SpinModel:
-    def __init__(self, int_mat, spin_spin_terms=(1, 1, -0.6), symmetric=False):
+    def __init__(self, int_mat, int_type=XXZ(-0.6)):
         self.int_mat = int_mat
-        self.symmetric = symmetric
-        self.spin_spin_terms = spin_spin_terms
+        self.int_type = int_type
+
+    @classmethod
+    def from_pos(cls, pos, int_params=VanDerWaals(), int_type=XXZ(-0.6)):
+        int_mat = int_params.get_interaction(pos)
+        return cls(int_mat, int_type)
+
+    @property
+    def int_mat_mf(self):
+        return self.int_mat.sum(axis=1)
+
+    @property
+    def J_mean(self):
+        return np.mean(self.int_mat_mf)
+
+    @property
+    def J_median(self):
+        return np.median(self.int_mat_mf)
 
     @property
     def N(self):
         return self.int_mat.shape[0]
 
     def hamiltonian(self, hx=0, hy=0, hz=0):
-        N = self.N
-
-        sx_list = self.get_op_list(sx)
-        sy_list = self.get_op_list(sy)
-        sz_list = self.get_op_list(sz)
-
-        alpha, beta, gamma = self.spin_spin_terms
-
-        # Gamma = decay_to_container(self.gamma_d, self.gamma_u, self.N)
-        # c_op_list = collapse_operators(self.gamma_ud, N)
 
         # external field terms
         H_field = self.hamiltonian_field(hx, hy, hz)
 
         # interaction terms
         H_int = 0
-        for i in range(N):
+        for i in range(self.N):
             for j in range(i):
-                H_int += self.int_mat[i, j] * (
-                        alpha * sx_list[i] * sx_list[j]
-                        + beta * sy_list[i] * sy_list[j]
-                        + gamma * sz_list[i] * sz_list[j])
-        H_int = self.symmetrize_op(H_int)
+                H_int += self.int_mat[i, j] * self.int_type.coupling(self, i, j)
 
         return H_int + H_field
 
     def hamiltonian_field(self, hx=0, hy=0, hz=0):
-        N = self.N
-        sx_list = self.get_op_list(sx)
-        sy_list = self.get_op_list(sy)
-        sz_list = self.get_op_list(sz)
+        hx = np.resize(hx, self.N)
+        hy = np.resize(hy, self.N)
+        hz = np.resize(hz, self.N)
 
-        hx = np.resize(hx, N)
-        hy = np.resize(hy, N)
-        hz = np.resize(hz, N)
+        H = sum(
+            hx[i] * self.single_spin_op(sx, i)
+            + hy[i] * self.single_spin_op(sy, i)
+            + hz[i] * self.single_spin_op(sz, i)
+            for i in range(self.N)
+        )
+        return H  # self.symmetrize_op(H)
 
-        H = sum(hx[i] * sx_list[i] + hy[i] * sy_list[i] + hz[i] * sz_list[i] for i in range(N))
-        return self.symmetrize_op(H)
+    def single_spin_op(self, op, n):
+        return single_spin_op(op, n, self.N)
 
-    def single_spin_op(self, op, n, symmetrize=False):
-        N = self.N
-        op = single_spin_op(op, n, N)
-        if symmetrize:
-            return symmetrize_op(op)
-        return op
+    def correlator(self, op, i, j):
+        return self.single_spin_op(op, i) * self.single_spin_op(op, j)
 
-    def get_op_list(self, op, symmetrize=False):
-        N = self.N
-        return [self.single_spin_op(op, n, symmetrize) for n in range(N)]
+    def get_op_list(self, op):
+        return [self.single_spin_op(op, n) for n in range(self.N)]
 
     def product_state(self, state=up_x):
-        N = self.N
         psi0 = state.unit()
-        psi = qt.tensor(N * [psi0])
-        return self.symmetrize_state(psi)
+        return qt.tensor(self.N * [psi0])
 
-    def symmetrize_state(self, state):
-        if self.symmetric:
-            return symmetrize_state(state)
-        return state
+    def symmetrize(self):
+        return SpinModelSym(self.int_mat, self.int_type)
+
+
+class SpinModelSym(SpinModel):
+    def __init__(self, int_mat, spin_spin_terms=(1, 1, 0), sign=1):
+        super(SpinModelSym, self).__init__(int_mat, spin_spin_terms)
+        self.sign = 1
 
     def symmetrize_op(self, op):
-        if self.symmetric:
-            return symmetrize_op(op)
-        return op
+        return symmetrize_op(op, self.sign)
 
+    def symmetrize_state(self, state):
+        return symmetrize_state(state, self.sign)
 
-class XXZ(SpinModel):
-    def __init__(self, pos, int_params=VanDerWaals(), delta=-0.6, symmetric=True):
-        self.pos = pos
-        self.int_params = int_params
-        spin_spin_terms = (1, 1, delta)
-        int_mat = self.int_params.get_interaction(self.pos)
-        super().__init__(int_mat, spin_spin_terms, symmetric)
+    def single_spin_op(self, op, n):
+        spin_op = super(SpinModelSym, self).single_spin_op(op, n)
+        return self.symmetrize_op(spin_op)
+
+    def correlator(self, op, i, j):
+        return self.single_spin_op(op, i) @ self.single_spin_op(op, j)
+
+    def product_state(self, state=up_x):
+        psi0 = state.unit()
+        psi = qt.tensor(self.N * [psi0])
+        return self.symmetrize_state(psi)
