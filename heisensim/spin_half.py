@@ -1,4 +1,5 @@
 import qutip as qt
+from qutip.fastsparse import csr_matrix
 import numpy as np
 
 sx = qt.sigmax() / 2
@@ -46,7 +47,7 @@ def symmetrize_op(op, sign=1):
     op_sym = 0.5 * (H_ul + H_lr + sign * (H_ll + H_ur))
     if np.isreal(op_sym.data).all():
         op_sym.data = op_sym.data.real
-    return op_sym  # .toarray()
+    return csr_matrix(op_sym)  # .toarray()
 
 
 def single_spin_op(op, n, N):

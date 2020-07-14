@@ -2,11 +2,12 @@ from scipy.spatial.distance import pdist, squareform
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from heisensim.spin_half import *
+from typing import Any
 
 
 @dataclass()
 class InteractionParams(ABC):
-    normalization = None
+    normalization: Any = None
 
     def get_interaction(self, *args):
         int_mat = self._get_interaction(*args)
@@ -22,9 +23,9 @@ class InteractionParams(ABC):
             return int_mat
 
         mf = int_mat.sum(axis=1)
-        if normalization is 'mean':
+        if normalization == 'mean':
             int_mat /= np.mean(mf)
-        elif normalization is 'median':
+        elif normalization == 'median':
             int_mat /= np.median(mf)
         return int_mat
 
