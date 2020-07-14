@@ -162,7 +162,7 @@ class SpinModel:
 class SpinModelSym(SpinModel):
     def __init__(self, int_mat, spin_spin_terms=(1, 1, 0), sign=1):
         super(SpinModelSym, self).__init__(int_mat, spin_spin_terms)
-        self.sign = 1
+        self.sign = sign
 
     def symmetrize_op(self, op):
         return symmetrize_op(op, self.sign)
