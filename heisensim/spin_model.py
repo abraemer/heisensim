@@ -164,6 +164,12 @@ class SpinModelSym(SpinModel):
         super(SpinModelSym, self).__init__(int_mat, int_type)
         self.sign = sign
 
+    @classmethod
+    def from_pos(cls, pos, int_params=VanDerWaals(), int_type=XXZ(-0.6), sign=1):
+        model = super(SpinModelSym, cls).from_pos(pos, int_params, int_type)
+        model.sign = sign
+        return model
+
     def symmetrize_op(self, op):
         return symmetrize_op(op, self.sign)
 
