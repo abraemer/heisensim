@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from heisensim.spin_half import *
 from typing import Any
+from heisensim.spin_half import correlator
 
 
 @dataclass()
@@ -122,12 +123,16 @@ class SpinModel:
         H_field = self.hamiltonian_field(hx, hy, hz)
 
         # interaction terms
+        H_int = self.hamiltonian_int()
+
+        return H_int + H_field
+
+    def hamiltonian_int(self):
         H_int = 0
         for i in range(self.N):
             for j in range(i):
                 H_int += self.int_mat[i, j] * self.int_type.coupling(self, i, j)
-
-        return H_int + H_field
+        return H_int
 
     def hamiltonian_field(self, hx=0, hy=0, hz=0):
         hx = np.resize(hx, self.N)
@@ -181,7 +186,8 @@ class SpinModelSym(SpinModel):
         return self.symmetrize_op(spin_op)
 
     def correlator(self, op, i, j):
-        return self.single_spin_op(op, i) @ self.single_spin_op(op, j)
+        c = correlator(op, i, j, self.N)
+        return self.symmetrize_op(c)  # self.single_spin_op(op, i) @ self.single_spin_op(op, j)
 
     def product_state(self, state=up_x):
         psi0 = state.unit()

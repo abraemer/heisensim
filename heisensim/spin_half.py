@@ -56,6 +56,10 @@ def single_spin_op(op, n, N):
     return qt.tensor(op_list)
 
 
+def correlator(op, i, j, N):
+    return single_spin_op(op, i, N) * single_spin_op(op, j, N)
+
+
 def get_op_list(op, N):
     return [single_spin_op(op, n, N) for n in range(N)]
 
