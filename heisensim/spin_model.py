@@ -60,6 +60,18 @@ class DipoleCoupling(PowerLaw):
         self.exponent = 3
         self.normalization = normalization
 
+    def _get_interaction(self, pos):
+        N = pos.shape(0)
+        interaction = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                if i == j:
+                    continue
+                d = pos[i] - pos[j]
+                dist = np.linalg.norm(d)
+                interaction[i, j] = self.coupling * (1 - 3 * (d[2] / dist) ** 2) / dist**self.exponent
+        return interaction
+
 
 @dataclass()
 class XYZ:
