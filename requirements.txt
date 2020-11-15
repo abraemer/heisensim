@@ -1,3 +1,5 @@
-scipy==1.4.1
-numpy==1.18.1
-qutip==4.5.0
+scipy
+numpy
+qutip
+netcdf4
+xarray
