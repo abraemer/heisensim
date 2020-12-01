@@ -49,8 +49,7 @@ simulation_results = xr.Dataset(
 
 for i in disorder_array:
     pos_i = positions[i]
-    pos_indices = tree.query_ball_point(pos_i, N + 1)
-    print(pos_indices)
+    _, pos_indices = tree.query(pos_i, N + 1)
     pos = positions[pos_indices]
     model = sim.SpinModelSym.from_pos(pos, int_params=sim.DipoleCoupling(1, normalization='mean'),
                                       int_type=sim.XX())
