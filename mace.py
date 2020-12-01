@@ -75,7 +75,8 @@ for i in disorder_array:
     simulation_results.delta_E_0.loc[i, h] = delta_E_0
     break
 
-save_path = path / "simulation_results"  # Path("/scratch/users/jfranz/Heisenberg")
+# save_path = path / "simulation_results"  #
+save_path = Path("/scratch/users/jfranz/Heisenberg")
 simulation_results.to_netcdf(
     save_path / "mace_N-{}_h-{}.nc".format(
         N, h)
