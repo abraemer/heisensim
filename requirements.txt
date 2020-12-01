@@ -3,3 +3,4 @@ numpy
 qutip
 netcdf4
 xarray
+h5py

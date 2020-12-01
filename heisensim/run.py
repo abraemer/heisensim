@@ -73,7 +73,8 @@ for i in disorder_array:
     simulation_results.E_0.loc[r_bl, i, h] = E_0
     simulation_results.delta_E_0.loc[r_bl, i, h] = delta_E_0
 
+save_path = Path("/scratch/users/jfranz/Heisenberg")
 simulation_results.to_netcdf(
-    cwd.parent / "simulation_results" / "run_N-{}_rbl-{}_h-{}.nc".format(
+    save_path /  "run_N-{}_rbl-{}_h-{}.nc".format(
         N, r_bl, h)
 )
