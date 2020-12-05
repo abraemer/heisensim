@@ -13,7 +13,7 @@ def energy_diff(beta, ev, E_0):
 
 
 def canonical_ensemble(ev, E_0, beta_0=0):
-    beta = minimize_scalar(energy_diff, args=(ev.values, E_0))
+    beta = minimize_scalar(energy_diff, args=(np.array(ev), E_0))
     return weights_canonical(beta.x, ev)
 
 
