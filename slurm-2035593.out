@@ -1,0 +1,28 @@
+Working Directory:          /home/hd/hd_hd/hd_gg429/cusp/scripts
+Running on host:            n1032
+Job id:                     2035593
+Job name:                   test_script
+Number of nodes allocated:  
+Number of cores allocated:  1
+Python Programming Language Version 3.8.3 has been loaded
+Python 3.8.3 with NumPy 1.19.0 has been loaded
+Matplotlib 3.2.2 with NumPy 1.19.0_python-3.8.3 has been loaded
+Python Programming Language Version 3.8.3 has been loaded
+Python 3.8.3 with NumPy 1.19.0 has been loaded
+Scipy 1.5.0 with NumPy 1.19.0_python-3.8.3 has been loaded
+QuTiP 4.6.0-dev has been loaded
+N=6
+N=7
+N=8
+N=9
+N=10
+N=11
+N=12
+N=13
+N=14
+N=15
+N=16
+N=17
+N=18
+N=19
+N=20
