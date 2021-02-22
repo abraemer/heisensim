@@ -35,7 +35,7 @@ def box_sampler(r_bl, N):
 # we don't really need this. The scaling needs to be the same. Perhaps one could argue for a different coefficient.
 #TODO think about a coefficient
 def boxlength_from_packing(N, r_bl=1, packing_density=0.74):
-    return radius_from_packing(N, r_bl=1, packing_density=0.74)
+    return (4*3.1415/3)**(1/3) * radius_from_packing(N, r_bl=1, packing_density=0.74)
 
 SAMPLING_SCALING_FUNCTIONS = {"sphere":radius_from_packing, "box":boxlength_from_packing}
 SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler}
@@ -43,7 +43,7 @@ SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler}
 
 ## Save paths
 def position_data_path(prefix, geometry, N):
-    Path(prefix) / "positions" / f"{geometry}_positions_{N:02d}.nc"
+    return Path(prefix) / "positions" / f"{geometry}_positions_{N:02d}.nc"
 
 def result_data_path(prefix, geometry, N, r_bl, h):
-    Path(prefix) / "results" / f"run_{geometry}_N-{N:02d}_rbl-{r_bl:.2f}_h-{h:.2f}.nc"
+    return Path(prefix) / "results" / f"run_{geometry}_N-{N:02d}_rbl-{r_bl:.2f}_h-{h:.2f}.nc"
