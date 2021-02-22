@@ -1,3 +1,6 @@
 /heisensim.egg-info/
+/env
 /.idea
+/.vscode
 *~
+*/__pycache__
