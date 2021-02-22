@@ -3,11 +3,11 @@
 import numpy as np
 import xarray as xr
 
-import simlib
 # add heisensim path to sys.path
 import sys, os.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import heisensim as sim
+import scripts.simlib as simlib
 
 ## core function
 def create_positions(geometry, N, disorder_realizations=100):
@@ -36,13 +36,15 @@ def create_positions(geometry, N, disorder_realizations=100):
 ## abstracted to enable future optimization
 def save_positions(data, path, *params):
     "Either provide a full path to a .nc file or a directory and geometry and N in params"
+    path = Path(path)
     if params:
-        path = simlib.position_data_path(*params)
+        path = simlib.position_data_path(path, *params)
+    path.parent.mkdir(parents=True, exist_ok=True)
     data.to_netcdf(path)
 
 def load_positions(path, *params):
     if params:
-        path = simlib.position_data_path(*params)
+        path = simlib.position_data_path(path, *params)
     return xr.load_dataarray(path)
 
 ## glue function together
