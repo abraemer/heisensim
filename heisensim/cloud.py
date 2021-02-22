@@ -27,7 +27,7 @@ class SimpleBlockade(ABC):
 
     def sample_positions(self, n):
         pos = np.array([self._new_pos()])
-        for i in range(n - 1):
+        for _ in range(n - 1):
             pos = self._append_to_pos(pos)
         return pos
 
@@ -63,6 +63,6 @@ class RandomChain(SimpleBlockade):
 
     def sample_positions(self, n):
         pos = np.array([[0, 0, 0], [0, 0, self.length]])
-        for i in range(n - 2):
+        for _ in range(n - 2):
             pos = self._append_to_pos(pos)
         return pos
