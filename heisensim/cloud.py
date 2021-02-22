@@ -19,7 +19,7 @@ class SimpleBlockade(ABC):
                 return np.append(pos, [new_pos], axis=0)
             i += 1
             if i > self.max_iter:
-                raise RuntimeError("The system didn't reach the required size.")
+                raise RuntimeError(f"The system didn't reach the required size. Obj: {self!r}")
 
     @abstractmethod
     def _new_pos(self):
