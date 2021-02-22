@@ -3,14 +3,12 @@ import numpy as np
 import xarray as xr
 from pathlib import Path
 
+from simlib import *
 import heisensim as sim
 
 
-def radius_from_packing(packing_density=0.74, N=12, r_bl=1):
-    return r_bl / 2 * ((N / packing_density) ** (1 / 3))
-
-
 parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
+parser.add_argument('--path', '-p', type=Path, default=Path.cwd(), help="path to position data")
 parser.add_argument('--spin_number', type=int, default=10,
                     help='number of spins. Hilbert space has dimension 2**N')
 parser.add_argument('--blockade_radius', "-r_bl", type=float, default=0.5,
@@ -23,8 +21,8 @@ N = args.spin_number
 r_bl = args.blockade_radius
 h = args.field
 
-cwd = path = Path.cwd()
-positions = xr.load_dataarray(cwd.parent / "positions" / "positions_{}.nc".format(N))
+path = args.path
+positions = xr.load_dataarray(position_data_path(path, N))
 
 h_list = [h]
 empty_array = np.zeros((1, 50, 1, 2 ** (N - 1)), dtype=np.float64)
@@ -73,8 +71,5 @@ for i in disorder_array:
     simulation_results.E_0.loc[r_bl, i, h] = E_0
     simulation_results.delta_E_0.loc[r_bl, i, h] = delta_E_0
 
-save_path = Path("/scratch/users/jfranz/Heisenberg")
-simulation_results.to_netcdf(
-    save_path /  "run_N-{}_rbl-{}_h-{}.nc".format(
-        N, r_bl, h)
-)
+save_path = path / "results"
+simulation_results.to_netcdf(result_data_path(path, N, r_bl, h))
