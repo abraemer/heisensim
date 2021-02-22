@@ -3,7 +3,12 @@ import numpy as np
 import xarray as xr
 from pathlib import Path
 
-from simlib import *
+import simlib
+import positions as poslib
+
+# add heisensim path to sys.path
+import sys, os.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import heisensim as sim
 
 
@@ -22,7 +27,7 @@ r_bl = args.blockade_radius
 h = args.field
 
 path = args.path
-positions = xr.load_dataarray(position_data_path(path, N))
+positions = poslib.load_positions(path, "sphere", N)
 
 h_list = [h]
 empty_array = np.zeros((1, 50, 1, 2 ** (N - 1)), dtype=np.float64)

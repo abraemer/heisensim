@@ -1,9 +1,15 @@
+# This file serves either as library for loading/saving/creating position data
+# or (when used as main file) to create positions with args taken from the command line
 import numpy as np
 import xarray as xr
 
-import heisensim as sim
 import simlib
+# add heisensim path to sys.path
+import sys, os.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import heisensim as sim
 
+## core function
 def create_positions(geometry, N, disorder_realizations=100):
     r_bl_list = np.round(np.arange(0.2, 0.95, 0.05), 2)
     disorder_realization_list = np.arange(disorder_realizations)
@@ -37,8 +43,9 @@ def save_positions(data, path, *params):
 def load_positions(path, *params):
     if params:
         path = simlib.position_data_path(*params)
-    return xr.load_dataarray(position_data_path(path, N))
+    return xr.load_dataarray(path)
 
+## glue function together
 def main(path_prefix, seed, geometry, N, disorder_realizations):
     np.random.seed(seed)
     positions = create_positions(geometry, N, disorder_realizations)

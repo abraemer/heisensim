@@ -1,13 +1,14 @@
 # Some common functionality needed to run simulations
 from pathlib import Path
 
+# add heisensim path to sys.path
+import sys, os.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import heisensim as sim
 
 ## Sampling related stuff
 #TODO dimensionality
 SAMPLING_GEOMETRIES = ["sphere", "box"]#, "experiment" ?
-SAMPLING_SCALING_FUNCTIONS = {"sphere":radius_from_packing, "box":boxlength_from_packing}
-SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler}
 
 ## General idea:
 ## Scale the space by the amount of particles N s.t.
@@ -35,6 +36,10 @@ def box_sampler(r_bl, N):
 #TODO think about a coefficient
 def boxlength_from_packing(N, r_bl=1, packing_density=0.74):
     return radius_from_packing(N, r_bl=1, packing_density=0.74)
+
+SAMPLING_SCALING_FUNCTIONS = {"sphere":radius_from_packing, "box":boxlength_from_packing}
+SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler}
+
 
 ## Save paths
 def position_data_path(prefix, geometry, N):
