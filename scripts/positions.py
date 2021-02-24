@@ -6,8 +6,8 @@ import xarray as xr
 # add heisensim path to sys.path
 import sys, os.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import heisensim as sim
-import scripts.simlib as simlib
+import heisensim as sim # pylint: disable=import-error
+import scripts.simlib as simlib # pylint: disable=import-error
 
 ## core function
 def create_positions(geometry, N, disorder_realizations=100):
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     import argparse
     from pathlib import Path
     parser = argparse.ArgumentParser(description='Generate blockaded positions.')
-    parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="output directory. Will be suffixed by 'positions'")
+    parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Positiond data will be saved to 'positions' subdirectory")
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Number of disorder realizations.", default=100)
     parser.add_argument("-s", "--seed", type=int, default=5, help="initial seed for the RNG")
     parser.add_argument("geometry", type=str, help="Geometry to sample from", choices=simlib.SAMPLING_GEOMETRIES)

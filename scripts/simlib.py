@@ -4,7 +4,7 @@ from pathlib import Path
 # add heisensim path to sys.path
 import sys, os.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import heisensim as sim
+import heisensim as sim # pylint: disable=import-error
 
 ## Sampling related stuff
 #TODO dimensionality
