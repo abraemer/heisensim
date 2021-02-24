@@ -1,33 +1,47 @@
-import argparse
 import numpy as np
 import xarray as xr
 from pathlib import Path
 
-import simlib
-import positions as poslib
-
 # add heisensim path to sys.path
 import sys, os.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import heisensim as sim
+import heisensim as sim # pylint: disable=import-error
+import scripts.simlib as simlib # pylint: disable=import-error
+import scripts.positions as poslib # pylint: disable=import-error
 
 
-parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
-parser.add_argument('--path', '-p', type=Path, default=Path.cwd(), help="path to position data")
-parser.add_argument('--spin_number', type=int, default=10,
-                    help='number of spins. Hilbert space has dimension 2**N')
-parser.add_argument('--blockade_radius', "-r_bl", type=float, default=0.5,
-                    help="Blockade radius, vary between 0.2 and 0.95")
-parser.add_argument('--field', "-f", type=float, default=0.0,
-                    help="External field, vary between -10 and 10")
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
+    parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Results will be saved to 'results' subdirectory.")
+    parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
+    parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
+    parser.add_argument("spins", type=int, help="Number of spins")
+    parser.add_argument("field", type=float, help="External field, vary between -10 and 10")
+    args = parser.parse_args()
 
-args = parser.parse_args()
-N = args.spin_number
-r_bl = args.blockade_radius
-h = args.field
+    position_data = poslib.load_positions(args.path, args.geometry, args.spins)
+    disorder_realizations = args.realizations or len(position_data.disorder_realization)
 
-path = args.path
-positions = poslib.load_positions(path, "sphere", N)
+    sys.exit()
+    
+
+# parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
+# parser.add_argument('--path', '-p', type=Path, default=Path.cwd(), help="path to position data")
+# parser.add_argument('--spin_number', type=int, default=10,
+#                     help='number of spins. Hilbert space has dimension 2**N')
+# parser.add_argument('--blockade_radius', "-r_bl", type=float, default=0.5,
+#                     help="Blockade radius, vary between 0.2 and 0.95")
+# parser.add_argument('--field', "-f", type=float, default=0.0,
+#                     help="")
+
+# args = parser.parse_args()
+# N = args.spin_number
+# r_bl = args.blockade_radius
+# h = args.field
+
+# path = args.path
+# positions = poslib.load_positions(path, "sphere", N)
 
 h_list = [h]
 empty_array = np.zeros((1, 50, 1, 2 ** (N - 1)), dtype=np.float64)
