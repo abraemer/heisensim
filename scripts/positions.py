@@ -9,25 +9,28 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import heisensim as sim # pylint: disable=import-error
 import scripts.simlib as simlib # pylint: disable=import-error
 
-## core function
-def create_positions(geometry, N, disorder_realizations=100):
-    r_bl_list = np.round(np.arange(0.2, 0.95, 0.05), 2)
-    disorder_realization_list = np.arange(disorder_realizations)
 
-    positions = xr.DataArray(
-        np.zeros((len(r_bl_list), len(disorder_realization_list), N, 3), dtype='float'),
+def empty_position_set(r_bl, realizations, system_size, dim=3):
+    dataset = xr.DataArray(
+        np.zeros((len(r_bl), realizations, system_size, dim), dtype=np.float64),
         dims=['r_bl', 'disorder_realization', 'particle', 'xyz'],
         coords={
-            'r_bl': r_bl_list,
-            'disorder_realization': disorder_realization_list,
-            'particle': np.arange(N),
+            'r_bl': r_bl,
+            'disorder_realization': np.arange(realizations),
+            'particle': np.arange(system_size),
             'xyz': ['x', 'y', 'z']
         }
     )
+    return dataset
+
+## core function
+def create_positions(geometry, N, disorder_realizations=100):
+    r_bl_list = np.round(np.arange(0.2, 0.95, 0.05), 2)
+    positions = empty_position_set(r_bl_list, disorder_realizations, N)
 
     for r_bl in r_bl_list:
         sampler = simlib.SAMPLING_GENERATORS[geometry](r_bl=r_bl, N=N) #sim.Sphere(r_bl=r_bl, radius=radius_from_packing(N=N), max_iter=int(1e5))
-        for disorder_realization in disorder_realization_list:
+        for disorder_realization in range(disorder_realizations):
             pos = sampler.sample_positions(N)
             positions.loc[r_bl, disorder_realization] = pos
     return positions
@@ -36,10 +39,9 @@ def create_positions(geometry, N, disorder_realizations=100):
 ## abstracted to enable future optimization
 def save_positions(data, path, *params):
     "Either provide a full path to a .nc file or a directory and geometry and N in params"
-    path = Path(path)
     if params:
         path = simlib.position_data_path(path, *params)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     data.to_netcdf(path)
 
 def load_positions(path, *params):
@@ -47,7 +49,7 @@ def load_positions(path, *params):
         path = simlib.position_data_path(path, *params)
     return xr.load_dataarray(path)
 
-## glue function together
+## glue functions together
 def main(path_prefix, seed, geometry, N, disorder_realizations):
     np.random.seed(seed)
     positions = create_positions(geometry, N, disorder_realizations)
