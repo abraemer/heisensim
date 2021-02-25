@@ -3,8 +3,8 @@ import xarray as xr
 from pathlib import Path
 
 # add heisensim path to sys.path
-import sys, os.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
 import heisensim as sim # pylint: disable=import-error
 import scripts.simlib as simlib # pylint: disable=import-error
 import scripts.positions as poslib # pylint: disable=import-error
@@ -16,9 +16,9 @@ def empty_result_set(r_bl, realizations, system_size, field_values):
     n_states = 2**(system_size-1) # 2**N/2 due to spin flip symmetry
     n_fields = len(field_values)
 
-    empty_array     = np.zeros((n_radii, realizations, n_fields, n_states), dtype=np.float64)
     empty_array_eev = np.zeros((n_radii, realizations, n_fields, n_states, system_size), dtype=np.float64)
-    empty_array_E_0 = np.zeros((n_radii, realizations, n_fields), dtype=np.float64)
+    empty_array     = np.zeros((n_radii, realizations, n_fields, n_states), dtype=np.float64)
+    # empty_array_E_0 = np.zeros((n_radii, realizations, n_fields), dtype=np.float64)
 
     simulation_results = xr.Dataset(
     {
@@ -105,4 +105,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.path, args.realizations, args.geometry, args.spins, np.sort(list(set(args.field))))
-    sys.exit()

@@ -2,8 +2,8 @@
 from pathlib import Path
 
 # add heisensim path to sys.path
-import sys, os.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
 import heisensim as sim # pylint: disable=import-error
 
 ## Sampling related stuff
