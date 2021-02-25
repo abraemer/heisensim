@@ -10,13 +10,16 @@ class SimpleBlockade(ABC):
     max_iter: int = 1000
 
     def _append_to_pos(self, pos):
+        return np.append(pos, [self._find_new_point(pos)], axis=0)
+    
+    def _find_new_point(self, pos):
         tree = cKDTree(pos)
         i = 0
         while True:
             new_pos = self._new_pos()
             in_range = tree.query_ball_point(new_pos, self.r_bl)
             if not in_range:
-                return np.append(pos, [new_pos], axis=0)
+                return new_pos
             i += 1
             if i > self.max_iter:
                 raise RuntimeError(f"The system didn't reach the required size. Obj: {self!r}")
@@ -40,6 +43,21 @@ class Box(SimpleBlockade):
 
     def _new_pos(self):
         return [self.length_x, self.length_y, self.length_z] * np.random.rand(3)
+
+@dataclass
+class BoxPBC(Box):
+    def _find_new_point(self, pos):
+        # generate all copies
+        all_pos = pos
+        if self.length_x > self.r_bl:
+            all_pos = np.vstack([all_pos + [[a*self.length_x,0,0]] for a in (-1,0,1)])
+        if self.length_y > self.r_bl:
+            all_pos = np.vstack([all_pos + [[0,b*self.length_y,0]] for b in (-1,0,1)])
+        if self.length_z > self.r_bl:
+            all_pos = np.vstack([all_pos + [[0,0,c*self.length_z]] for c in (-1,0,1)])
+        return super()._find_new_point(all_pos)
+
+
 
 
 @dataclass()
