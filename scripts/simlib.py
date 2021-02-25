@@ -43,7 +43,7 @@ SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler}
 
 ## Save paths
 def position_data_path(prefix, geometry, N):
-    return Path(prefix) / "positions" / f"{geometry}_positions_{N:02d}.nc"
+    return Path(prefix) / "positions" / f"{geometry}_N_{N:02d}.nc"
 
-def result_data_path(prefix, geometry, N, r_bl, h):
-    return Path(prefix) / "results" / f"run_{geometry}_N-{N:02d}_rbl-{r_bl:.2f}_h-{h:.2f}.nc"
+def ed_data_path(prefix, geometry, N): #r_bl, h
+    return Path(prefix) / "results" / f"ed_{geometry}_N_{N:02d}.nc"
