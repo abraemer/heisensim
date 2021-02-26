@@ -36,7 +36,7 @@ def box_pbc_sampler(rho, N, dim=3):
 
 # The OBC Volume coeffs should probably be a bit bigger to accommodate for the extra space outside
 # Right now results won't really be comparable, but we will not need this (right now that is)
-VOLUME_COEFFS = {"blockade":[1.0, np.pi, 4/3*np.pi], "sphere":[1.0, np.pi, 4/3*np.pi], "box":[1.0,1.0,1.0], "box-pbc":[1.0,1.0,1.0]}
+VOLUME_COEFFS = {"blockade":[2.0, np.pi, 4/3*np.pi], "sphere":[2.0, np.pi, 4/3*np.pi], "box":[1.0,1.0,1.0], "box-pbc":[1.0,1.0,1.0]}
 SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler, "box-pbc":box_pbc_sampler}
 
 
