@@ -1,73 +1,9 @@
-from scipy.spatial.distance import pdist, squareform
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from heisensim.spin_half import *
-from typing import Any
-from heisensim.spin_half import correlator
 
-
-@dataclass()
-class InteractionParams(ABC):
-    normalization: Any = None
-
-    def get_interaction(self, *args):
-        int_mat = self._get_interaction(*args)
-        return self.normalize(int_mat, self.normalization)
-
-    @abstractmethod
-    def _get_interaction(self, *args):
-        pass
-
-    @staticmethod
-    def normalize(int_mat, normalization):
-        if normalization is None:
-            return int_mat
-
-        mf = int_mat.sum(axis=1)
-        if normalization == 'mean':
-            int_mat /= np.mean(mf)
-        elif normalization == 'median':
-            int_mat /= np.median(mf)
-        return int_mat
-
-
-@dataclass()
-class PowerLaw(InteractionParams):
-    exponent: float = 6
-    coupling: float = 1
-
-    def _get_interaction(self, pos):
-        coupling = self.coupling
-        exponent = self.exponent
-
-        dist = squareform(pdist(pos))
-        np.fill_diagonal(dist, 1)
-        interaction = coupling * dist**(-exponent)
-        np.fill_diagonal(interaction, 0)
-        return interaction
-
-
-class VanDerWaals(PowerLaw):
-    def __init__(self, coupling=1, normalization=None):
-        self.coupling = coupling
-        self.exponent = 6
-        self.normalization = normalization
-
-
-class DipoleCoupling(PowerLaw):
-    def __init__(self, coupling, normalization=None):
-        self.coupling = coupling
-        self.exponent = 3
-        self.normalization = normalization
-
-    def dipole_interaction(self, u, v):
-        d = u - v
-        dist = np.linalg.norm(d)
-        return self.coupling * (1 - 3 * (d[2] / dist) ** 2) / dist ** self.exponent
-
-    # noinspection PyTypeChecker
-    def _get_interaction(self, pos):
-        return squareform(pdist(pos, self.dipole_interaction))
+#from heisensim.spin_half import *
+from heisensim.spin_half import correlator, symmetrize_op, symmetrize_state, up_x, sx, sy, sz, single_spin_op
+import qutip as qt
+import numpy as np
 
 
 @dataclass()
@@ -77,7 +13,6 @@ class XYZ:
     zz: float = 1
 
     def coupling(self, model, i, j):
-        N = model.N
         return (
                 self.xx * model.correlator(sx, i, j)
                 + self.yy * model.correlator(sy, i, j)
@@ -104,11 +39,6 @@ class SpinModel:
     def __init__(self, int_mat, int_type=XXZ(-0.6)):
         self.int_mat = int_mat
         self.int_type = int_type
-
-    @classmethod
-    def from_pos(cls, pos, int_params=VanDerWaals(), int_type=XXZ(-0.6)):
-        int_mat = int_params.get_interaction(pos)
-        return cls(int_mat, int_type)
 
     @property
     def int_mat_mf(self):
@@ -169,20 +99,15 @@ class SpinModel:
         psi0 = state.unit()
         return qt.tensor(self.N * [psi0])
 
-    def symmetrize(self):
-        return SpinModelSym(self.int_mat, self.int_type)
+    def symmetrize(self, sign=1):
+        return SpinModelSym(self.int_mat, self.int_type, sign)
 
 
 class SpinModelSym(SpinModel):
+    "Represents a symmetry sector of a Spin model with respect to spin-flip."
     def __init__(self, int_mat, int_type=XXZ(-0.6), sign=1):
         super(SpinModelSym, self).__init__(int_mat, int_type)
         self.sign = sign
-
-    @classmethod
-    def from_pos(cls, pos, int_params=VanDerWaals(), int_type=XXZ(-0.6), sign=1):
-        model = super(SpinModelSym, cls).from_pos(pos, int_params, int_type)
-        model.sign = sign
-        return model
 
     def symmetrize_op(self, op):
         return symmetrize_op(op, self.sign)
