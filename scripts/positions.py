@@ -5,7 +5,10 @@ from pathlib import Path
 import numpy as np
 import xarray as xr
 
-import simlib
+if __name__ == "__main__":
+    import simlib
+else:
+    from . import simlib
 
 
 def empty_position_set(rho, realizations, system_size, dim=3):
@@ -23,7 +26,7 @@ def empty_position_set(rho, realizations, system_size, dim=3):
 
 ## core function
 def create_positions(geometry, dim, N, disorder_realizations=100):
-    rho_list = np.round(np.arange(0.2, 0.95, 0.05), 2)
+    rho_list = np.round(np.arange(0.05, 0.95, 0.05), 2)
     positions = empty_position_set(rho_list, disorder_realizations, N, dim)
 
     for rho in rho_list:
