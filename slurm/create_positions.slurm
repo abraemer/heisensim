@@ -21,7 +21,7 @@ for n in {6..20}
 do
     for d in {1..3}
     do
-        echo "N=$n"
-        python scripts/positions.py --path $(ws_find cusp) -r 400 -d $d box-pbc $n
+        echo "N=$n d=$d" 
+        python3 scripts/positions.py --path $(ws_find cusp) -r 400 -d $d box-pbc $n
     done
 done
