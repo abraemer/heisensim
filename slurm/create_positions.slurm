@@ -2,7 +2,7 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=00:05:00 
+#SBATCH --time=01:00:00 
 #SBATCH --mem=1gb 
 #SBATCH --job-name=test_script
 ########### End Slurm header ##########
@@ -19,6 +19,9 @@ module load phys/qutip # also loads numpy, scipy, matplotlib
 
 for n in {6..20}
 do
-    echo "N=$n"
-    python create_positions.py --path $(ws_find cusp) $n
+    for d in {1..3}
+    do
+        echo "N=$n"
+        python scripts/positions.py --path $(ws_find cusp) -r 400 -d $d box-pbc $n
+    done
 done
