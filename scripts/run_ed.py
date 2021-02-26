@@ -38,13 +38,11 @@ def empty_result_set(rho, realizations, system_size, field_values):
 )
     return simulation_results
 
-def compute(position_data, geometry, dim, realizations, field_values, alpha=3):
+def compute(position_data, geometry, realizations, field_values, interaction):
     "Main computation routine"
     N = len(position_data.particle)
     dim = len(position_data.xyz)
     simulation_results = empty_result_set(position_data.rho, realizations, N, field_values)
-    interaction = sim.PowerLaw(exponent=alpha, normalization='mean')
-    interaction = sim.DipoleCoupling(1, normalization='mean')
 
     print("ToDo:", np.array(position_data.rho))
     for rho in position_data.rho:
@@ -66,11 +64,6 @@ def compute(position_data, geometry, dim, realizations, field_values, alpha=3):
 
                 simulation_results.e_vals.loc[rho, i, h] = e_vals
                 simulation_results.eon.loc[rho, i, h] = np.abs(psi_0 @ e_states)**2
-                ## Do not need this data. It can be computed much cheaper from eon and e_vals
-                # E_0 = sim.expect(H, psi_0)
-                # delta_E_0 = np.sqrt(sim.expect(H @ H, psi_0) - E_0 ** 2)
-                # simulation_results.E_0.loc[rho, i, h] = E_0
-                # simulation_results.delta_E_0.loc[rho, i, h] = delta_E_0
 
     return simulation_results
 
@@ -91,12 +84,18 @@ def load_data(path, *params):
     return xr.open_dataset(path)
 
 ## Glue everything together
-def main(path, realizations, geometry, dim, n_spins, field_values):
+def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values):
     "Load, compute and save results"
+    save_path = simlib.ed_data_path(path, geometry, dim, alpha, n_spins)
+    if not force and save_path.exists():
+        # check amount of realizations? field values?
+        print(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
+        exit()
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
+    interaction = sim.PowerLaw(exponent=alpha, normalization='mean')
     disorder_realizations = realizations or len(position_data.disorder_realization)
-    result = compute(position_data, geometry, dim, disorder_realizations, field_values)
-    save_data(result, path, geometry, dim, n_spins)
+    result = compute(position_data, geometry, disorder_realizations, field_values, interaction)
+    save_data(result, save_path)
 
 ## Take cmd args when used as script
 if __name__ == "__main__":
@@ -104,10 +103,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
     parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Results will be saved to 'results' subdirectory.")
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
+    parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
+    parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
     parser.add_argument("field", type=float, metavar="f", help="External field, vary between -10 and 10", nargs="+")
     args = parser.parse_args()
 
-    main(args.path, args.realizations, args.geometry, args.dimensions, args.spins, np.sort(list(set(args.field))))
+    main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, np.sort(list(set(args.field))))

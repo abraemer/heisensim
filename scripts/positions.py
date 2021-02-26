@@ -53,7 +53,7 @@ def main(path_prefix, force, seed, geometry, dim, N, disorder_realizations):
     save_path = simlib.position_data_path(path_prefix, geometry, dim, N)
     if not force and save_path.exists():
         # check amount of realizations?
-        print(f"Positions with params: geometry={geometry}, dim={dim}, N={N} already exist.")
+        print(f"Positions with params: geometry={geometry}, dim={dim}, N={N} already exist. Skipping. Use --force to overwrite.")
         exit()
     positions = create_positions(geometry, dim, N, disorder_realizations)
     save_positions(positions, save_path)
