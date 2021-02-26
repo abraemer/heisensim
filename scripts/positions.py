@@ -48,10 +48,15 @@ def load_positions(path, *params, **kwargs):
     return xr.load_dataarray(path)
 
 ## glue functions together
-def main(path_prefix, seed, geometry, dim, N, disorder_realizations):
+def main(path_prefix, force, seed, geometry, dim, N, disorder_realizations):
     np.random.seed(seed)
+    save_path = simlib.position_data_path(path_prefix, geometry, dim, N)
+    if not force and save_path.exists():
+        # check amount of realizations?
+        print(f"Positions with params: geometry={geometry}, dim={dim}, N={N} already exist.")
+        exit()
     positions = create_positions(geometry, dim, N, disorder_realizations)
-    save_positions(positions, path_prefix, geometry, dim, N)
+    save_positions(positions, save_path)
 
 
 if __name__ == '__main__':
@@ -61,10 +66,11 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Number of disorder realizations.", default=100)
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
     parser.add_argument("-s", "--seed", type=int, default=5, help="initial seed for the RNG")
+    parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry to sample from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
     args = parser.parse_args()
 
-    main(args.path, args.seed, args.geometry, args.dimensions, args.spins, args.realizations)
+    main(args.path, args.force, args.seed, args.geometry, args.dimensions, args.spins, args.realizations)
 
 
