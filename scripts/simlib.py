@@ -8,7 +8,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 import heisensim as sim # pylint: disable=import-error
 
 ## Sampling related stuff
-#TODO dimensionality
 SAMPLING_GEOMETRIES = ["sphere", "box", "box-pbc"]#, "experiment" ?
 
 ## General idea:
@@ -35,7 +34,6 @@ def box_pbc_sampler(rho, N, dim=3):
     return sim.BoxPBC(lengths=np.ones(dim)*size)
 
 
-
 # The OBC Volume coeffs should probably be a bit bigger to accommodate for the extra space outside
 # Right now results won't really be comparable, but we will not need this (right now that is)
 VOLUME_COEFFS = {"blockade":[1.0, np.pi, 4/3*np.pi], "sphere":[1.0, np.pi, 4/3*np.pi], "box":[1.0,1.0,1.0], "box-pbc":[1.0,1.0,1.0]}
@@ -46,5 +44,5 @@ SAMPLING_GENERATORS = {"sphere":sphere_sampler, "box":box_sampler, "box-pbc":box
 def position_data_path(prefix, geometry, dim, N):
     return Path(prefix) / "positions" / f"{geometry}_{dim}d_N_{N:02d}.nc"
 
-def ed_data_path(prefix, geometry, dim, N): #r_bl, h
-    return Path(prefix) / "results" / f"ed_{geometry}_{dim}d_N_{N:02d}.nc"
+def ed_data_path(prefix, geometry, dim, alpha, N):
+    return Path(prefix) / "results" / f"ed_{geometry}_{dim}d_alpha_{alpha}_N_{N:02d}.nc"
