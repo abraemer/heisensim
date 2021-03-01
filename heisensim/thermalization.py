@@ -28,4 +28,4 @@ def micro_ensemble(ev, E_0, delta_E=10):
 
 
 def diagonal_ensemble(eon):
-    return abs(eon)**2
+    return eon
