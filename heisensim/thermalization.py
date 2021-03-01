@@ -3,6 +3,13 @@ import numpy as np
 
 
 def weights_canonical(beta, ev):
+    if beta < 0:
+        ev = -ev
+        beta = -beta
+    # normalize energys - shift such that smallest energy is 0
+    # so there are no negative evals that may blow up
+    minimum = np.min(ev)
+    ev = ev - minimum
     weights = np.exp(-beta * ev)
     return weights / weights.sum()
 
