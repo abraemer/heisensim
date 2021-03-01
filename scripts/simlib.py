@@ -45,4 +45,7 @@ def position_data_path(prefix, geometry, dim, N):
     return Path(prefix) / "positions" / f"{geometry}_{dim}d_N_{N:02d}.nc"
 
 def ed_data_path(prefix, geometry, dim, alpha, N):
-    return Path(prefix) / "results" / f"ed_{geometry}_{dim}d_alpha_{alpha}_N_{N:02d}.nc"
+    return Path(prefix) / "data" / f"ed_{geometry}_{dim}d_alpha_{alpha}_N_{N:02d}.nc"
+
+def result_data_path(prefix, geometry, dim, alpha, N):
+    return Path(prefix) / "results" / f"{geometry}_{dim}d_alpha_{alpha}_N_{N:02d}.nc"
