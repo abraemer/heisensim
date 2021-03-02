@@ -29,7 +29,7 @@ def empty_position_set(rho, realizations, system_size, dim=3):
 #  d=2 rho=1.7
 #  d=3 rho=2.1
 N_SAMPLES = 20
-RHO_RANGES = [(0.1, 1.25), (0.1, 1.7), (0.1,2.1)]
+RHO_RANGES = [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)]
 ## core function
 def create_positions(geometry, dim, N, disorder_realizations=100):
     rho_list = np.round(np.linspace(*RHO_RANGES[dim-1], N_SAMPLES),2)#np.round(np.arange(0.05, 0.95, 0.05), 2)
