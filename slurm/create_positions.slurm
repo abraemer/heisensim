@@ -2,7 +2,7 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=01:00:00 
+#SBATCH --time=00:20:00 
 #SBATCH --mem=1gb 
 #SBATCH --job-name=positions
 #SBATCH --output="logs/pos-slurm-%j.out"
