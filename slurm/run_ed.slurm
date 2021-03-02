@@ -2,7 +2,7 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=01:00:00 
+#SBATCH --time=06:00:00 
 #SBATCH --mem=32gb 
 #SBATCH --job-name=run-ed
 #SBATCH --cpus-per-task=48
