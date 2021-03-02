@@ -27,4 +27,4 @@ module load phys/qutip # also loads numpy, scipy, matplotlib
 
 echo "[$(date +"%T")] $GEOM N=$n d=$d alpha=$ALPHA" 
 python3 scripts/ensemble_predictions.py --path $(ws_find cusp) --alpha $ALPHA --dimensions $D $GEOM $N
-echo "$[(date +"%T")] DONE"
+echo "[$(date +"%T")] DONE"

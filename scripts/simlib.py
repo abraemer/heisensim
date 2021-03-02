@@ -13,7 +13,7 @@ import heisensim as sim # pylint: disable=import-error
 VERBOSE = True
 def log(*message, **kwargs):
     if VERBOSE:
-        print(f"{dt.now().strftime("[%Y-%m-%d %H:%M:%S]")}", *message, **kwargs)
+        print(f"{dt.now().strftime('[%Y-%m-%d %H:%M:%S]')}", *message, **kwargs)
         sys.stdout.flush()
 
 
