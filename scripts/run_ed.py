@@ -162,7 +162,7 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
     disorder_realizations = realizations or len(position_data.disorder_realization)
     field_values = np.sort(list(set(field_values)))
     rhos = np.sort(list(set(rhos))) if rhos else None
-    result = compute(position_data, geometry, disorder_realizations, field_values, interaction, rhos)
+    result = compute_parallel(position_data, geometry, disorder_realizations, field_values, interaction, rhos)
     save_data(result, save_path)
 
 ## Take cmd args when used as script
