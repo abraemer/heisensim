@@ -120,10 +120,11 @@ def compute_core(model, field_values):
     result_evals = np.zeros((len(field_values), dim),    dtype=np.float64)
 
     spin_ops = model.get_op_list(sim.sx)
+    field = sum(spin_ops)
     H_int = model.hamiltonian()
     psi_0 = model.product_state()
     for i, h in enumerate(field_values):
-        H = H_int + model.hamiltonian_field(hx=h)
+        H = H_int + h*field#model.hamiltonian_field(hx=h)
         e_vals, e_states = np.linalg.eigh(H.toarray())
         for spin, op in enumerate(spin_ops):
             result_eev[i, :, spin] = sim.expect(op, e_states)
