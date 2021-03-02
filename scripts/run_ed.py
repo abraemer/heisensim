@@ -1,5 +1,7 @@
 import numpy as np
 import xarray as xr
+from multiprocessing import Pool
+
 from pathlib import Path
 
 # add heisensim path to sys.path
@@ -46,7 +48,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
     rhos = np.sort(np.asarray(rhos))
     simulation_results = empty_result_set(rhos, realizations, N, field_values)
 
-    simlib.log("ToDo: {rhos}")
+    simlib.log(f"ToDo: {rhos}")
     simlib.log("with", realizations, "realizations and", len(field_values), "field values")
     for rho in rhos:
         geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
@@ -54,22 +56,82 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
         for i in range(realizations):
             simlib.log(f"{i:03d}/{realizations:03d}")
             model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=sim.XX())
-            H_int = model.hamiltonian()
-            psi_0 = model.product_state()
-            # magn = 1 / N * sum(model.get_op_list(sim.sx))
-            # J_median = np.median(model.int_mat.sum(axis=0))
+            eev, eon, evals = compute_core(model, field_values)
+            simulation_results.e_vals.loc[rho, i] = evals
+            simulation_results.eev.loc[rho, i] = eev
+            simulation_results.eon.loc[rho, i] = eon
 
-            for h in field_values:
-                H = H_int + model.hamiltonian_field(hx=h)
-                e_vals, e_states = np.linalg.eigh(H.toarray())
-                for spin, op in enumerate(model.get_op_list(sim.sx)):
-                    eev = sim.expect(op, e_states)
-                    simulation_results.eev.loc[rho, i, h, :, spin] = eev
+            # H_int = model.hamiltonian()
+            # psi_0 = model.product_state()
+            # # magn = 1 / N * sum(model.get_op_list(sim.sx))
+            # # J_median = np.median(model.int_mat.sum(axis=0))
 
-                simulation_results.e_vals.loc[rho, i, h] = e_vals
-                simulation_results.eon.loc[rho, i, h] = np.abs(psi_0 @ e_states)**2
+            # for h in field_values:
+            #     H = H_int + model.hamiltonian_field(hx=h)
+            #     e_vals, e_states = np.linalg.eigh(H.toarray())
+            #     for spin, op in enumerate(model.get_op_list(sim.sx)):
+            #         eev = sim.expect(op, e_states)
+            #         simulation_results.eev.loc[rho, i, h, :, spin] = eev
+
+            #     simulation_results.e_vals.loc[rho, i, h] = e_vals
+            #     simulation_results.eon.loc[rho, i, h] = np.abs(psi_0 @ e_states)**2
 
     return simulation_results
+
+def compute_parallel(position_data, geometry, realizations, field_values, interaction, rhos=None, processes=8):
+    "Main computation routine using T processes"
+    N = len(position_data.particle)
+    dim = len(position_data.xyz)
+    rhos = position_data.rho if rhos is None else position_data.rho[rhos]
+    rhos = np.sort(np.asarray(rhos))
+    simulation_results = empty_result_set(rhos, realizations, N, field_values)
+
+    simlib.log(f"ToDo: {rhos}")
+    simlib.log("with", realizations, "realizations and", len(field_values), "field values using", processes, "processes")
+    with Pool(processes=processes) as pool:
+        tasks = [[None]*realizations for _ in range(len(rhos))]
+        for j, rho in enumerate(rhos):
+            geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
+            for i in range(realizations):
+                model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=sim.XX())
+                tasks[j][i] = pool.apply_async(compute_core_process, args=(model, field_values, f"rho #{j} - {i:03d}/{realizations:03d}"))
+        simlib.log("Everthing started!")
+        pool.close()
+        pool.join()
+        for j in range(len(rhos)):
+            for i in range(realizations):
+                eev, eon, evals = tasks[j][i].get()
+                simulation_results.e_vals[j, i] = evals
+                simulation_results.eev[j, i] = eev
+                simulation_results.eon[j, i] = eon
+    return simulation_results
+
+def compute_core_process(model, field_values, name):
+    simlib.log(name, "started!")
+    res = compute_core(model, field_values)
+    simlib.log(name, "finished!")
+    return res
+
+def compute_core(model, field_values):
+    N = model.N
+    dim = 2**(N-1)
+    result_eev = np.zeros(len(field_values, dim, N), dtype=np.float64)
+    result_eon = np.zeros(len(field_values, dim), dtype=np.float64)
+    result_evals = np.zeros(len(field_values, dim), dtype=np.float64)
+
+    spin_ops = model.get_op_list(sim.sx)
+    H_int = model.hamiltonian()
+    psi_0 = model.product_state()
+    for i, h in enumerate(field_values):
+        H = H_int + model.hamiltonian_field(hx=h)
+        e_vals, e_states = np.linalg.eigh(H.toarray())
+        for spin, op in enumerate(spin_ops):
+            result_eev[i, :, spin] = sim.expect(op, e_states)
+        result_evals[i] = e_vals
+        result_eon[i] = np.abs(psi_0 @ e_states)**2
+    return result_eev, result_eon, result_evals
+
+
 
 ## Save/Load
 def save_data(data, path, *params):

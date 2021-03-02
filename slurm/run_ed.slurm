@@ -5,7 +5,7 @@
 #SBATCH --time=01:00:00 
 #SBATCH --mem=32gb 
 #SBATCH --job-name=run-ed
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=48
 #SBATCH --output="logs/run-ed-slurm-%j.out"
 ########### End Slurm header ##########
 echo "Working Directory:          $PWD" 
@@ -27,7 +27,7 @@ export OMP_NUM_THREADS=8
 export MKL_NUM_THREADS=8
 
 echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA" 
-python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --rho 0 10 19 --dimensions $D $GEOM $N $(seq -1.0 0.04 0.75) $(seq -0.3 0.002 0.1)
+python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -1.0 0.05 0.75) $(seq -0.3 0.005 0.1)
 echo "[$(date +"%T")] DONE!"
 echo "Queuing evaluation"
 sbatch slurm/make_predictions.slurm $GEOM $N $D $ALPHA
