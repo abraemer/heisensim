@@ -115,9 +115,9 @@ def compute_core_process(model, field_values, name):
 def compute_core(model, field_values):
     N = model.N
     dim = 2**(N-1)
-    result_eev = np.zeros(len(field_values, dim, N), dtype=np.float64)
-    result_eon = np.zeros(len(field_values, dim), dtype=np.float64)
-    result_evals = np.zeros(len(field_values, dim), dtype=np.float64)
+    result_eev   = np.zeros((len(field_values), dim, N), dtype=np.float64)
+    result_eon   = np.zeros((len(field_values), dim),    dtype=np.float64)
+    result_evals = np.zeros((len(field_values), dim),    dtype=np.float64)
 
     spin_ops = model.get_op_list(sim.sx)
     H_int = model.hamiltonian()
