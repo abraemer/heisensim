@@ -25,6 +25,6 @@ ALPHA=$4
 module load phys/qutip # also loads numpy, scipy, matplotlib
 # pip install xarray # installed locally not needed each time
 
-echo "[$(date +"%T")] $GEOM N=$n d=$d alpha=$ALPHA" 
+echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA" 
 python3 scripts/ensemble_predictions.py --path $(ws_find cusp) --alpha $ALPHA --dimensions $D $GEOM $N
 echo "[$(date +"%T")] DONE"

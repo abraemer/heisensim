@@ -78,7 +78,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
 
     return simulation_results
 
-def compute_parallel(position_data, geometry, realizations, field_values, interaction, rhos=None, processes=8):
+def compute_parallel(position_data, geometry, realizations, field_values, interaction, rhos=None, processes=12):
     "Main computation routine using T processes"
     N = len(position_data.particle)
     dim = len(position_data.xyz)
