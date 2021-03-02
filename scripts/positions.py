@@ -31,14 +31,24 @@ def empty_position_set(rho, realizations, system_size, dim=3):
 N_SAMPLES = 20
 RHO_RANGES = [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)]
 ## core function
-def create_positions(geometry, dim, N, disorder_realizations=100):
+def create_positions(geometry, dim, N, disorder_realizations=100, fail_rate=0.1):
     rho_list = np.round(np.linspace(*RHO_RANGES[dim-1], N_SAMPLES),2)#np.round(np.arange(0.05, 0.95, 0.05), 2)
     positions = empty_position_set(rho_list, disorder_realizations, N, dim)
 
+    max_misses = disorder_realizations*fail_rate
     for rho in rho_list:
         sampler = simlib.SAMPLING_GENERATORS[geometry](rho=rho, N=N, dim=dim)
+        misses = 0
         for disorder_realization in range(disorder_realizations):
-            pos = sampler.sample_positions(N)
+            while misses < max_misses:
+                try:
+                    pos = sampler.sample_positions(N)
+                except RuntimeError:
+                    misses += 1
+                else: # if no exception triggered
+                    break
+            else:# if while was not ended by break (meaning misses == max_misses)
+                raise RuntimeError(f"sampler {sampler!r} did fail to converge too often (fail rate {fail_rate*100:.2f}%)! Current rho={rho}")
             positions.loc[rho, disorder_realization] = pos
     return positions
 
@@ -62,7 +72,7 @@ def main(path_prefix, force, seed, geometry, dim, N, disorder_realizations):
     save_path = simlib.position_data_path(path_prefix, geometry, dim, N)
     if not force and save_path.exists():
         # check amount of realizations?
-        print(f"Positions with params: geometry={geometry}, dim={dim}, N={N} already exist. Skipping. Use --force to overwrite.")
+        simlib.log(f"Positions with params: geometry={geometry}, dim={dim}, N={N} already exist. Skipping. Use --force to overwrite.")
         exit()
     positions = create_positions(geometry, dim, N, disorder_realizations)
     save_positions(positions, save_path)

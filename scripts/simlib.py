@@ -1,11 +1,21 @@
 # Some common functionality needed to run simulations
 from pathlib import Path
+from datetime import datetime as dt
 import numpy as np
 
 # add heisensim path to sys.path
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
 import heisensim as sim # pylint: disable=import-error
+
+
+## logging
+VERBOSE = True
+def log(*message, **kwargs):
+    if VERBOSE:
+        print(f"{dt.now().strftime("[%Y-%m-%d %H:%M:%S]")}", *message, **kwargs)
+        sys.stdout.flush()
+
 
 ## Sampling related stuff
 SAMPLING_GEOMETRIES = ["sphere", "box", "box-pbc"]#, "experiment" ?

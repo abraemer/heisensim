@@ -55,11 +55,13 @@ def canonical_prediction(data, realizations=False):
     rhos = len(data.rho)
     results = np.zeros((rhos, fields, shots), dtype=np.float32)
     E_0 = np.einsum("abcd,abcd->abc",data.eon, data.e_vals) #->(rho, disorder, h)
+    simlib.log(f"ToDo: {rhos} rhos, {fields} field values and {shots} disorder realizations")
     for i in range(rhos):
+        simlib.log(f"Starting rho #{i}\nField: ")
         for j in range(fields):
+            simlib.log(j, end="\t")
             for k in range(shots):
                 ensemble_occupation = sim.canonical_ensemble(data.e_vals[i,k,j], E_0[i,k,j])
-                #print(f"{i},{j},{k} -> {np.any(np.isnan(np.asarray(ensemble_occupation)))}")
                 results[i,j,k] += np.dot(eev[i,k,j], ensemble_occupation)
     return results
 
@@ -92,7 +94,7 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins):
     save_path = simlib.result_data_path(path, geometry, dim, alpha, n_spins)
     if not force and save_path.exists():
         # check amount of realizations? field values?
-        print(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
+        simlib.log(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
         exit()
     sim_data = edlib.load_data(path, geometry, dim, alpha, n_spins)
     result = compute_ensemble_predictions(sim_data, realizations)

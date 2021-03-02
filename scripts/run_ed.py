@@ -46,11 +46,13 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
     rhos = np.sort(np.asarray(rhos))
     simulation_results = empty_result_set(rhos, realizations, N, field_values)
 
-    print("ToDo:", rhos)
+    simlib.log("ToDo: {rhos}")
+    simlib.log("with", realizations, "realizations and", len(field_values), "field values")
     for rho in rhos:
         geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
-        print("rho =", float(rho))
+        simlib.log(f"rho = {rho}")
         for i in range(realizations):
+            simlib.log(f"{i:03d}/{realizations:03d}")
             model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=sim.XX())
             H_int = model.hamiltonian()
             psi_0 = model.product_state()
@@ -91,7 +93,7 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
     save_path = simlib.ed_data_path(path, geometry, dim, alpha, n_spins)
     if not force and save_path.exists():
         # check amount of realizations? field values?
-        print(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
+        simlib.log(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
         exit()
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
     interaction = sim.PowerLaw(exponent=alpha, normalization='mean')
