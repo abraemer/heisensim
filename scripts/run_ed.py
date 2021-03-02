@@ -38,14 +38,16 @@ def empty_result_set(rho, realizations, system_size, field_values):
 )
     return simulation_results
 
-def compute(position_data, geometry, realizations, field_values, interaction):
+def compute(position_data, geometry, realizations, field_values, interaction, rhos=None):
     "Main computation routine"
     N = len(position_data.particle)
     dim = len(position_data.xyz)
-    simulation_results = empty_result_set(position_data.rho, realizations, N, field_values)
+    rhos = position_data.rho if rhos is None else position_data.rho[rhos]
+    rhos = np.sort(np.asarray(rhos))
+    simulation_results = empty_result_set(rhos, realizations, N, field_values)
 
-    print("ToDo:", np.array(position_data.rho))
-    for rho in position_data.rho:
+    print("ToDo:", rhos)
+    for rho in rhos:
         geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
         print("rho =", float(rho))
         for i in range(realizations):
@@ -84,7 +86,7 @@ def load_data(path, *params):
     return xr.open_dataset(path)
 
 ## Glue everything together
-def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values):
+def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values, rhos):
     "Load, compute and save results"
     save_path = simlib.ed_data_path(path, geometry, dim, alpha, n_spins)
     if not force and save_path.exists():
@@ -94,7 +96,9 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values)
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
     interaction = sim.PowerLaw(exponent=alpha, normalization='mean')
     disorder_realizations = realizations or len(position_data.disorder_realization)
-    result = compute(position_data, geometry, disorder_realizations, field_values, interaction)
+    field_values = np.sort(list(set(field_values)))
+    rhos = np.sort(list(set(rhos))) if rhos else None
+    result = compute(position_data, geometry, disorder_realizations, field_values, interaction, rhos)
     save_data(result, save_path)
 
 ## Take cmd args when used as script
@@ -105,10 +109,11 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
     parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
+    parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
     parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
     parser.add_argument("field", type=float, metavar="f", help="External field, vary between -10 and 10", nargs="+")
     args = parser.parse_args()
 
-    main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, np.sort(list(set(args.field))))
+    main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, args.field, args.rho)
