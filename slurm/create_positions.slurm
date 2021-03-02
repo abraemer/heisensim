@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=01:00:00 
 #SBATCH --mem=1gb 
-#SBATCH --job-name=test_script
+#SBATCH --job-name=positions
 #SBATCH --output="logs/pos-slurm-%j.out"
 ########### End Slurm header ##########
 echo "Working Directory:          $PWD" 
