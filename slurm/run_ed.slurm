@@ -6,7 +6,7 @@
 #SBATCH --mem=32gb 
 #SBATCH --job-name=run-ed
 #SBATCH --cpus-per-task=48
-#SBATCH --output="logs/run-ed-slurm-%j.out"
+#SBATCH --output="logs/run-ed-N_$1-$2d-alpha_$3-slurm-%j.out"
 ########### End Slurm header ##########
 echo "Working Directory:          $PWD" 
 echo "Running on host:            $HOSTNAME" 

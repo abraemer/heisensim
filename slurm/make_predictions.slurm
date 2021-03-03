@@ -6,7 +6,7 @@
 #SBATCH --mem=1gb 
 #SBATCH --job-name=predictions
 #SBATCH --cpus-per-task=1
-#SBATCH --output="logs/prediction-slurm-%j.out"
+#SBATCH --output="logs/prediction-N_$1-$2d-alpha_$3-slurm-%j.out"
 ########### End Slurm header ##########
 echo "Working Directory:          $PWD" 
 echo "Running on host:            $HOSTNAME" 
