@@ -6,7 +6,6 @@
 #SBATCH --mem=32gb 
 #SBATCH --job-name=run-ed
 #SBATCH --cpus-per-task=48
-#SBATCH --output="logs/run-ed-N_$1-$2d-alpha_$3-slurm-%j.out"
 ########### End Slurm header ##########
 echo "Working Directory:          $PWD" 
 echo "Running on host:            $HOSTNAME" 
@@ -30,4 +29,4 @@ echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA"
 python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -0.95 0.1 0.75) $(seq -0.3 0.01 0.1)
 echo "[$(date +"%T")] DONE!"
 echo "Queuing evaluation"
-sbatch slurm/make_predictions.slurm $GEOM $N $D $ALPHA
+sbatch --output "logs/prediction-N_$1-$2d-alpha_$3-slurm-%j.out slurm/make_predictions.slurm $GEOM $N $D $ALPHA
