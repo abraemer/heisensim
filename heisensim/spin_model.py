@@ -13,11 +13,14 @@ class XYZ:
     zz: float = 1
 
     def coupling(self, model, i, j):
-        return (
-                self.xx * model.correlator(sx, i, j)
-                + self.yy * model.correlator(sy, i, j)
-                + self.zz * model.correlator(sz, i, j)
-        )
+        res = 0
+        if self.xx != 0:
+            res += self.xx * model.correlator(sx, i, j)
+        if self.yy != 0:
+            res += self.yy * model.correlator(sy, i, j)
+        if self.zz != 0:
+            res += self.zz * model.correlator(sz, i, j)
+        return res
 
 
 class XXZ(XYZ):
@@ -78,12 +81,12 @@ class SpinModel:
         hy = np.resize(hy, self.N)
         hz = np.resize(hz, self.N)
 
-        H = sum(
-            hx[i] * self.single_spin_op(sx, i)
-            + hy[i] * self.single_spin_op(sy, i)
-            + hz[i] * self.single_spin_op(sz, i)
-            for i in range(self.N)
-        )
+        H = 0*self.single_spin_op(sx, 0) # just geht the dimensions right
+        for hvec, op in [(hx, sx), (hy, sy), (hz, sz)]:
+            for i, hi in enumerate(hvec):
+                if hi != 0:
+                    H += hi*self.single_spin_op(op, i)
+
         return H  # self.symmetrize_op(H)
 
     def single_spin_op(self, op, n):
