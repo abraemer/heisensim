@@ -40,7 +40,7 @@ def empty_result_set(rho, realizations, system_size, field_values):
 )
     return simulation_results
 
-def compute(position_data, geometry, realizations, field_values, interaction, rhos=None):
+def compute(position_data, geometry, realizations, field_values, interaction, int_type, rhos=None):
     "Main computation routine"
     N = len(position_data.particle)
     dim = len(position_data.xyz)
@@ -55,8 +55,9 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
         simlib.log(f"rho = {rho}")
         for i in range(realizations):
             simlib.log(f"{i:03d}/{realizations:03d}")
-            model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=sim.XX())
-            eev, eon, evals = compute_core(model, field_values)
+            model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
+            normed_field_values = field_values * model.J_mean
+            eev, eon, evals = compute_core(model, normed_field_values)
             simulation_results.e_vals.loc[rho, i] = evals
             simulation_results.eev.loc[rho, i] = eev
             simulation_results.eon.loc[rho, i] = eon
@@ -78,9 +79,8 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
 
     return simulation_results
 
-def compute_parallel(position_data, geometry, realizations, field_values, interaction, rhos=None, processes=12):
+def compute_parallel(position_data, geometry, realizations, field_values, interaction, int_type, rhos=None, processes=12):
     "Main computation routine using T processes"
-    int_type = sim.XX()
     N = len(position_data.particle)
     dim = len(position_data.xyz)
     rhos = position_data.rho if rhos is None else position_data.rho[rhos]
@@ -95,7 +95,7 @@ def compute_parallel(position_data, geometry, realizations, field_values, intera
             geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
             for i in range(realizations):
                 model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
-                normed_field_values = field_values * model.J_mean()
+                normed_field_values = field_values * model.J_mean
                 tasks[j][i] = pool.apply_async(compute_core_process, args=(model, normed_field_values, f"rho #{j} - {i:03d}/{realizations:03d}"))
         simlib.log("Everthing started!")
         pool.close()
@@ -162,10 +162,11 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
         exit()
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
     interaction = sim.PowerLaw(exponent=alpha, normalization=None)
+    int_type = sim.XX()
     disorder_realizations = realizations or len(position_data.disorder_realization)
     field_values = np.sort(list(set(field_values)))
     rhos = np.sort(list(set(rhos))) if rhos else None
-    result = compute_parallel(position_data, geometry, disorder_realizations, field_values, interaction, rhos)
+    result = compute_parallel(position_data, geometry, disorder_realizations, field_values, interaction, int_type, rhos)
     save_data(result, save_path)
 
 ## Take cmd args when used as script
