@@ -80,6 +80,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, rh
 
 def compute_parallel(position_data, geometry, realizations, field_values, interaction, rhos=None, processes=12):
     "Main computation routine using T processes"
+    int_type = sim.XX()
     N = len(position_data.particle)
     dim = len(position_data.xyz)
     rhos = position_data.rho if rhos is None else position_data.rho[rhos]
@@ -93,8 +94,9 @@ def compute_parallel(position_data, geometry, realizations, field_values, intera
         for j, rho in enumerate(rhos):
             geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
             for i in range(realizations):
-                model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=sim.XX())
-                tasks[j][i] = pool.apply_async(compute_core_process, args=(model, field_values, f"rho #{j} - {i:03d}/{realizations:03d}"))
+                model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
+                normed_field_values = field_values * model.J_mean()
+                tasks[j][i] = pool.apply_async(compute_core_process, args=(model, normed_field_values, f"rho #{j} - {i:03d}/{realizations:03d}"))
         simlib.log("Everthing started!")
         pool.close()
         pool.join()
@@ -159,7 +161,7 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
         simlib.log(f"Results with params: geometry={geometry}, dim={dim}, N={n_spins}, alpha={alpha} already exist. Skipping. Use --force to overwrite.")
         exit()
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
-    interaction = sim.PowerLaw(exponent=alpha, normalization='mean')
+    interaction = sim.PowerLaw(exponent=alpha, normalization=None)
     disorder_realizations = realizations or len(position_data.disorder_realization)
     field_values = np.sort(list(set(field_values)))
     rhos = np.sort(list(set(rhos))) if rhos else None
@@ -178,7 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
-    parser.add_argument("field", type=float, metavar="f", help="External field, vary between -10 and 10", nargs="+")
+    parser.add_argument("field", type=float, metavar="f", help="Effective external field, vary between -10 and 10", nargs="+")
     args = parser.parse_args()
 
     main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, args.field, args.rho)
