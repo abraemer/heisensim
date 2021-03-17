@@ -180,7 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
-    parser.add_argument("-p", "--processes", type=int, metavar="p", default=12, help="Number of processes to use")
+    parser.add_argument("--processes", type=int, metavar="P", default=12, help="Number of processes to use")
     parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
