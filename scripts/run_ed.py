@@ -138,7 +138,6 @@ def compute_core(model, field_values):
 
 ## Save/Load
 def save_data(data, path, *params):
-    # TODO merge if compatible (e.g only different field values)
     path = Path(path)
     if params:
         path = simlib.ed_data_path(path, *params)
@@ -153,7 +152,7 @@ def load_data(path, *params):
     return xr.open_dataset(path)
 
 ## Glue everything together
-def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values, rhos):
+def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values, rhos, processes=12):
     "Load, compute and save results"
     save_path = simlib.ed_data_path(path, geometry, dim, alpha, n_spins)
     if not force and save_path.exists():
@@ -166,7 +165,10 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
     disorder_realizations = realizations or len(position_data.disorder_realization)
     field_values = np.sort(list(set(field_values)))
     rhos = np.sort(list(set(rhos))) if rhos else None
-    result = compute_parallel(position_data, geometry, disorder_realizations, field_values, interaction, int_type, rhos)
+    if processes == 1:
+        result = compute(position_data, geometry, disorder_realizations, field_values, interaction, int_type, rhos)
+    else:
+        result = compute_parallel(position_data, geometry, disorder_realizations, field_values, interaction, int_type, rhos, processes)
     save_data(result, save_path)
 
 ## Take cmd args when used as script
@@ -178,10 +180,11 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
+    parser.add_argument("-p", "--processes", type=int, metavar="p", default=12, help="Number of processes to use")
     parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
     parser.add_argument("spins", type=int, help="Number of spins")
     parser.add_argument("field", type=float, metavar="f", help="Effective external field, vary between -10 and 10", nargs="+")
     args = parser.parse_args()
 
-    main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, args.field, args.rho)
+    main(args.path, args.force, args.realizations, args.geometry, args.dimensions, args.alpha, args.spins, args.field, args.rho, args.processes)

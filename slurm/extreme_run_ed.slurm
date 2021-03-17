@@ -18,13 +18,13 @@ N=$1
 D=$2
 ALPHA=$3
 GEOM=box-pbc
-PROCESSES=12
+PROCESSES=1
 
 # load modules
 module load phys/qutip # also loads numpy, scipy, matplotlib
 # pip install xarray # installed locally not needed each time
-export OMP_NUM_THREADS=8
-export MKL_NUM_THREADS=8
+export OMP_NUM_THREADS=96
+export MKL_NUM_THREADS=96
 
 echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA" 
 python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --processes $PROCESSES --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -0.95 0.1 0.75) $(seq -0.3 0.01 0.1)
