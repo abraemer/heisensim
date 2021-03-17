@@ -161,7 +161,7 @@ def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values,
         exit()
     position_data = poslib.load_positions(path, geometry, dim, n_spins)
     interaction = sim.PowerLaw(exponent=alpha, normalization=None)
-    int_type = sim.XX()
+    int_type = sim.XXZ(-0.76)
     disorder_realizations = realizations or len(position_data.disorder_realization)
     field_values = np.sort(list(set(field_values)))
     rhos = np.sort(list(set(rhos))) if rhos else None
