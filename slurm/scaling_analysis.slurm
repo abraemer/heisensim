@@ -30,4 +30,4 @@ echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA"
 python3 scripts/run_ed.py --path "$(ws_find cusp)/scaling" --alpha $ALPHA --processes $PROCESSES --rho 0 10 19 -r 400 --dimensions $D $GEOM $N -0.3 -0.15 -0.1 0.1
 echo "[$(date +"%T")] DONE!"
 echo "Queuing evaluation"
-sbatch --output "logs/prediction-N_$N-${D}d-alpha_$ALPHA-slurm-%j.out" slurm/make_predictions.slurm $GEOM $N $D $ALPHA
+sbatch --output "logs/sa-prediction-N_$N-${D}d-alpha_$ALPHA-slurm-%j.out" slurm/make_predictions.slurm $GEOM $N $D $ALPHA
