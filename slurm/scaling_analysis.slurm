@@ -2,8 +2,8 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=06:00:00 
-#SBATCH --mem=32gb 
+#SBATCH --time=24:00:00 
+#SBATCH --mem=64gb 
 #SBATCH --job-name=SA
 #SBATCH --cpus-per-task=48
 ########### End Slurm header ##########
@@ -27,7 +27,7 @@ export OMP_NUM_THREADS=8
 export MKL_NUM_THREADS=8
 
 echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA" 
-python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --processes $PROCESSES --rho 0 10 19 -r 100 --dimensions $D $GEOM $N -0.3 -0.15 -0.1 0.1
+python3 scripts/run_ed.py --path "$(ws_find cusp)/scaling" --alpha $ALPHA --processes $PROCESSES --rho 0 10 19 -r 400 --dimensions $D $GEOM $N -0.3 -0.15 -0.1 0.1
 echo "[$(date +"%T")] DONE!"
 echo "Queuing evaluation"
 sbatch --output "logs/prediction-N_$N-${D}d-alpha_$ALPHA-slurm-%j.out" slurm/make_predictions.slurm $GEOM $N $D $ALPHA
