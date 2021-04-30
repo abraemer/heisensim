@@ -18,7 +18,7 @@ echo "Number of cores allocated:  $SLURM_NTASKS"
 module load phys/qutip # also loads numpy, scipy, matplotlib
 # pip install xarray # installed locally not needed each time
 
-$SHOTS=$1
+SHOTS=$1
 echo "Recreating position files with $SHOTS realizations"
 
 echo "[$(date +"%T")] Start!"
