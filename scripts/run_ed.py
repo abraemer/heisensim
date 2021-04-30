@@ -177,7 +177,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Calculate ensemble expectation values.')
     parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Results will be saved to 'results' subdirectory.")
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
-    parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
+    parser.add_argument("-a", "--alpha", metavar="alpha", type=float, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
     parser.add_argument("--processes", type=int, metavar="P", default=12, help="Number of processes to use")
