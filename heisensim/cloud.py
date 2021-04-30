@@ -44,7 +44,7 @@ class SimpleBlockade(ABC):
         return squareform(pdist(pos, self._metric()))
     
     def interaction_pairwise(self, pos, function):
-        "Compute f(a,b) for all particle (assuming symmetry) and return the interation matrix"
+        "Compute f(a,b) for all particle (assuming symmetry) and return the interaction matrix"
         res = np.zeros((pos.shape[0], pos.shape[0]), dtype=np.float64)
         for i in range(pos.shape[0]):
             for j in range(i):
@@ -93,6 +93,41 @@ class BoxPBC(Box):
             new_b[i] = coords[np.argmin(vals)]
         return a, new_b
 
+
+@dataclass 
+class NoisyChain(BoxPBC):
+    """Represents a chain with positional noise drawn uniformely from -sigma to sigma.
+    The blockade radius should be left at the default value of 1.0 and the instead the spacing parameter be varied.
+    It gives the distance between two atoms mean positions in the chain. The default value for the spacing is 2.0,
+    meaning the blockade radii of neighbouring atoms touch for sigma=0.0.
+    
+    This chain implements periodic boundary conditions meaning it's total volume is N*spacing, so it's density is 2r_bl/spacing.
+    
+    THIS GEOMETY IS NOT THREADSAFE!!!"""
+    N = 1 # number of atoms
+    sigma: float = 0
+    spacing: float = 2.0 #default spacing: 2 blockade radii
+
+    def __init__(self, N: int = 1, sigma: float = 0., spacing: float = 2.0):
+        self.N = N
+        self.sigma = sigma
+        self.spacing = spacing
+        self.lengths = np.array([N*self.spacing]) # Set the length explicitely
+
+    def sample_positions(self, n):
+        "Sample n positions respecting the blockade radius from the cloud's geometry. Throws RuntimeError if not converged."
+        if n != self.N:
+            # Just make a new object with different N and sample positions there
+            return NoisyChain(N=n, spacing=self.spacing, sigma=self.sigma).sample_positions(n)
+        self.at = 0 # ! use and additional instance variable to pass along the current position. Should be considered a hack and is not threadsafe!
+        pos = np.array([self._new_pos()])
+        for k in range(1, n):
+            self.at = k
+            pos = self._append_to_pos(pos)
+        return pos
+
+    def _new_pos(self):
+        return np.array((self.at*self.spacing + 2*np.random.rand()*self.sigma - self.sigma) % self.lengths)
 
 
 @dataclass()
