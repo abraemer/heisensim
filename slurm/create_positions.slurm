@@ -24,13 +24,13 @@ echo "Recreating position files with $SHOTS realizations"
 echo "[$(date +"%T")] Start!"
 for N in {6..20}
 do
-    echo "[$(date +"%T")] N=$n d=$d noisy-chain-pbc"
+    echo "[$(date +"%T")] N=$N d=$d noisy-chain-pbc"
     python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d 1 noisy-chain-pbc $N
     for d in {1..3}
     do
         for geom in "box-pbc" #"sphere" "box"
         do
-            echo "[$(date +"%T")] N=$n d=$d $geom" 
+            echo "[$(date +"%T")] N=$N d=$d $geom" 
             python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d $d $geom $N
         done
     done
