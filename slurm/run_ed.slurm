@@ -17,7 +17,7 @@ echo "Number of cores allocated:  $SLURM_NTASKS"
 N=$1
 D=$2
 ALPHA=$3
-GEOM=box-pbc
+GEOM=$4
 PROCESSES=12
 
 # load modules
