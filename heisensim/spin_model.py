@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 #from heisensim.spin_half import *
-from heisensim.spin_half import correlator, symmetrize_op, symmetrize_state, up_x, sx, sy, sz, single_spin_op
+from .spin_half import correlator, symmetrize_op, symmetrize_state, up_x, sx, sy, sz, single_spin_op
 import qutip as qt
 import numpy as np
 

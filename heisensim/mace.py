@@ -1,5 +1,5 @@
 from scipy.spatial.ckdtree import cKDTree
-from heisensim.spin_model import SpinModelSym
+from .spin_model import SpinModelSym
 
 
 def pos_for_mace(positions, spin_number, cluster_size):
