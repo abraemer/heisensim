@@ -1,5 +1,5 @@
 #!/bin/bash
-if ! (( $# == 5 ))
+if ! (( $# == 4 ))
 then
     echo "Usage: start_run.sh N D ALPHA GEOM"
     exit
