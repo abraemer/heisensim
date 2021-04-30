@@ -25,6 +25,29 @@ def empty_result_set(data):
     )
     return dataset
 
+def micro_canonical_prediction_fixed(data, window, relative=True):
+    eev = np.average(data.eev, axis=-1) #average over spins
+    shots = len(data.disorder_realization)
+    fields = len(data.h)
+    rhos = len(data.rho)
+    states = len(data.eigen_state)
+    if relative:
+        window = int(states*window)
+    results = np.zeros((rhos, fields, shots), dtype=np.float32)
+    E_0 = np.einsum("abcd,abcd->abc",data.eon, data.e_vals) #->(rho, disorder, h)
+    for i in range(rhos):
+        for j in range(fields):
+            for k in range(shots):
+                # use a fixed window for microcanonical ensemble
+                index = int(np.sum(data.e_vals[i,k,j] < E_0[i,k,j]))
+                lowerIndex = max(0,index-window)
+                higherIndex = min(states,index+window)
+                ensemble_occupation = np.zeros(states)
+                ensemble_occupation[lowerIndex:higherIndex] = 1/(higherIndex-lowerIndex)
+                results[i,j,k] = np.dot(eev[i,k,j], ensemble_occupation)
+                windows[i,j,k] = higherIndex - lowerIndex
+    return results
+
 def micro_canonical_prediction(data, realizations=False):
     eev = np.average(data.eev, axis=-1) #average over spins
     shots = realizations or len(data.disorder_realization)
@@ -69,7 +92,7 @@ def canonical_prediction(data, realizations=False):
 def compute_ensemble_predictions(data, realizations=False):
     results = empty_result_set(data)
 
-    results.loc["micro"]     = micro_canonical_prediction(data, realizations)
+    results.loc["micro"]     = micro_canonical_prediction_fixed(data, 0.01, relative=True) # 2% of the spectrum contribute
     results.loc["diagonal"]  = diagonal_prediction(data, realizations)
     results.loc["canonical"] = canonical_prediction(data, realizations)
     return results
