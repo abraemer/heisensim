@@ -2,7 +2,7 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=00:20:00 
+#SBATCH --time=00:40:00 
 #SBATCH --mem=1gb 
 #SBATCH --job-name=positions
 #SBATCH --output="logs/pos-slurm-%j.out"
@@ -28,7 +28,7 @@ do
     python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d 1 noisy-chain-pbc $N
     for d in {1..3}
     do
-        for geom in "sphere" "box" "box-pbc"
+        for geom in "box-pbc" #"sphere" "box"
         do
             echo "[$(date +"%T")] N=$n d=$d $geom" 
             python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d $d $geom $N
