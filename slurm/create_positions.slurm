@@ -18,13 +18,21 @@ echo "Number of cores allocated:  $SLURM_NTASKS"
 module load phys/qutip # also loads numpy, scipy, matplotlib
 # pip install xarray # installed locally not needed each time
 
+$SHOTS=$1
+echo "Recreating position files with $SHOTS realizations"
+
 echo "[$(date +"%T")] Start!"
-for n in {6..20}
+for N in {6..20}
 do
+    echo "[$(date +"%T")] N=$n d=$d noisy-chain-pbc"
+    python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d 1 noisy-chain-pbc $N
     for d in {1..3}
     do
-        echo "[$(date +"%T")] N=$n d=$d" 
-        python3 scripts/positions.py --path $(ws_find cusp) -r 400 -d $d box-pbc $n
+        for geom in "sphere" "box" "box-pbc"
+        do
+            echo "[$(date +"%T")] N=$n d=$d $geom" 
+            python3 ./scripts/positions.py --path $(ws_find cusp) -r $SHOTS -F -d $d $geom $N
+        done
     done
 done
 echo "[$(date +"%T")] DONE!"

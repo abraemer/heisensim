@@ -29,10 +29,14 @@ def empty_position_set(rho, realizations, system_size, dim=3):
 #  d=2 rho=1.7
 #  d=3 rho=2.1
 N_SAMPLES = 20
-RHO_RANGES = [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)]
+RHO_RANGES = {"box-pbc": [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)],
+              "box"    : [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)],
+              "sphere" : [(0.1, 1.25), (0.1, 1.7), (0.1,2.05)],
+              "noisy-chain-pbc" : [(1.0, 1.99)]}
+
 ## core function
-def create_positions(geometry, dim, N, disorder_realizations=100, fail_rate=0.1):
-    rho_list = np.round(np.linspace(*RHO_RANGES[dim-1], N_SAMPLES),2)#np.round(np.arange(0.05, 0.95, 0.05), 2)
+def create_positions(geometry, dim, N, disorder_realizations=100, fail_rate=0.2):
+    rho_list = np.round(np.linspace(*RHO_RANGES[geometry][dim-1], N_SAMPLES),2)#np.round(np.arange(0.05, 0.95, 0.05), 2)
     positions = empty_position_set(rho_list, disorder_realizations, N, dim)
 
     max_misses = disorder_realizations*fail_rate
