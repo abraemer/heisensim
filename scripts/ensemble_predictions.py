@@ -45,7 +45,6 @@ def micro_canonical_prediction_fixed(data, window, relative=True):
                 ensemble_occupation = np.zeros(states)
                 ensemble_occupation[lowerIndex:higherIndex] = 1/(higherIndex-lowerIndex)
                 results[i,j,k] = np.dot(eev[i,k,j], ensemble_occupation)
-                windows[i,j,k] = higherIndex - lowerIndex
     return results
 
 def micro_canonical_prediction(data, realizations=False):
