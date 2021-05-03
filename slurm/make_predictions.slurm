@@ -2,8 +2,8 @@
 # ########## Begin Slurm header ########## 
 #SBATCH --nodes=1 
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=01:00:00 
-#SBATCH --mem=1gb 
+#SBATCH --time=00:05:00 
+#SBATCH --mem=10gb 
 #SBATCH --job-name=predictions
 #SBATCH --cpus-per-task=1
 ########### End Slurm header ##########
