@@ -186,7 +186,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
     parser.add_argument("-a", "--alpha", metavar="alpha", type=float, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-s", "--scale-field", action="store_true", dest="scale_field", help="Scale field values by mean interaction strength.")
-    parser.set_defaults(scale_field=True)
+    parser.set_defaults(scale_field=False)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
     parser.add_argument("--processes", type=int, metavar="P", default=12, help="Number of processes to use")
