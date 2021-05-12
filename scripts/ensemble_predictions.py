@@ -128,7 +128,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate predictions for the mean x magentization.')
     parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Results will be saved to 'results' subdirectory.")
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
-    parser.add_argument("-a", "--alpha", metavar="alpha", type=int, help="coefficient of the vdW interactions", default=3)
+    parser.add_argument("-a", "--alpha", metavar="alpha", type=float, help="coefficient of the vdW interactions", default=3)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("-F", "--force", action="store_true", help="Force overwriting of existing data.")
     parser.add_argument("geometry", type=str, help="Geometry sampled from", choices=simlib.SAMPLING_GEOMETRIES)
