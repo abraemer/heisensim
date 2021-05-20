@@ -52,13 +52,18 @@ def compute(position_data, geometry, realizations, field_values, interaction, in
     simlib.log("with", realizations, "realizations and", len(field_values), "field values")
     for rho in rhos:
         geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
+        if scale_field == "ensemble":
+            # compute the ensembles mean J
+            ensemble_J_mean = np.mean([np.mean(np.sum(interaction.get_interaction(geom, position_data.loc[rho, i]), axis=1)) for i in range(realizations)])
         simlib.log(f"rho = {rho}")
         for i in range(realizations):
             simlib.log(f"{i:03d}/{realizations:03d}")
             model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
             normed_field_values = field_values
-            if scale_field:
+            if scale_field == "shot":
                 normed_field_values *= model.J_mean
+            elif scale_field == "ensemble":
+                normed_field_values *= ensemble_J_mean
 
             eev, eon, evals = compute_core(model, normed_field_values)
             simulation_results.e_vals.loc[rho, i] = evals
@@ -82,7 +87,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, in
 
     return simulation_results
 
-def compute_parallel(position_data, geometry, realizations, field_values, interaction, int_type, rhos=None, processes=12, scale_field=False):
+def compute_parallel(position_data, geometry, realizations, field_values, interaction, int_type, rhos=None, processes=12, scale_field="no"):
     "Main computation routine using T processes"
     N = len(position_data.particle)
     dim = len(position_data.xyz)
@@ -96,12 +101,18 @@ def compute_parallel(position_data, geometry, realizations, field_values, intera
         tasks = [[None]*realizations for _ in range(len(rhos))]
         for j, rho in enumerate(rhos):
             geom = simlib.SAMPLING_GENERATORS[geometry](N=N, dim=dim, rho=float(rho))
+            if scale_field == "ensemble":
+                # compute the ensembles mean J
+                ensemble_J_mean = np.mean([np.mean(np.sum(interaction.get_interaction(geom, position_data.loc[rho, i]), axis=1)) for i in range(realizations)])
             for i in range(realizations):
                 model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
 
                 normed_field_values = field_values
-                if scale_field:
+                if scale_field == "shot":
                     normed_field_values *= model.J_mean
+                elif scale_field == "ensemble":
+                    normed_field_values *= ensemble_J_mean
+
 
                 tasks[j][i] = pool.apply_async(compute_core_process, args=(model, normed_field_values, f"rho #{j} - {i:03d}/{realizations:03d}"))
         simlib.log("Everthing started!")
@@ -159,7 +170,7 @@ def load_data(path, *params):
     return xr.open_dataset(path)
 
 ## Glue everything together
-def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values, rhos, processes=12, scale_field=False):
+def main(path, force, realizations, geometry, dim, alpha, n_spins, field_values, rhos, processes=12, scale_field="no"):
     "Load, compute and save results"
     save_path = simlib.ed_data_path(path, geometry, dim, alpha, n_spins)
     if not force and save_path.exists():
@@ -185,7 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--path", type=Path, default=Path.cwd(), help="Data directory. Results will be saved to 'results' subdirectory.")
     parser.add_argument("-d", "--dimensions", metavar="d", type=int, help="Number of spatial dimensions (1,2,3 are supported)", default=3)
     parser.add_argument("-a", "--alpha", metavar="alpha", type=float, help="coefficient of the vdW interactions", default=3)
-    parser.add_argument("-s", "--scale-field", action="store_true", dest="scale_field", help="Scale field values by mean interaction strength.")
+    parser.add_argument("-s", "--scale-field", type=str, dest="scale_field", help="Scale field values by mean interaction strength. Possible values are: no, shot, ensemble")
     parser.set_defaults(scale_field=False)
     parser.add_argument("-r", "--realizations", metavar="n", type=int, help="Limit number of disorder samples.", default=False)
     parser.add_argument("--rho", type=int, metavar="r", help="Override density", nargs="+")
