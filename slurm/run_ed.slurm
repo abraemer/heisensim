@@ -29,7 +29,7 @@ export MKL_NUM_THREADS=8
 echo "[$(date +"%T")] $GEOM N=$N d=$D alpha=$ALPHA" 
 # for no or shot scaling of field
 # python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --processes $PROCESSES --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -0.95 0.1 0.75) $(seq -0.3 0.01 0.1)
-python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --scale-field ensemble --processes $PROCESSES --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -1.5 0.2 1.1) $(seq -0.5 0.05 0.3)
+python3 scripts/run_ed.py --path $(ws_find cusp) --alpha $ALPHA --scale-field ensemble --processes $PROCESSES --rho 0 10 19 -r 100 --dimensions $D $GEOM $N $(seq -1.5 0.2 1.1) 0.0 $(seq -0.5 0.025 0.3)
 echo "[$(date +"%T")] DONE!"
 echo "Queuing evaluation"
 sbatch --output "logs/prediction-N_$1-$2d-alpha_$3-slurm-%j.out" slurm/make_predictions.slurm $GEOM $N $D $ALPHA
