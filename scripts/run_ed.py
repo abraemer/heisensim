@@ -55,6 +55,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, in
         if scale_field == "ensemble":
             # compute the ensembles mean J
             ensemble_J_mean = np.mean([np.mean(np.sum(interaction.get_interaction(geom, position_data.loc[rho, i]), axis=1)) for i in range(realizations)])
+            print(f"Ensemble J mean for rhoi={rho}: {ensemble_J_mean}")
         simlib.log(f"rho = {rho}")
         for i in range(realizations):
             simlib.log(f"{i:03d}/{realizations:03d}")
@@ -104,6 +105,7 @@ def compute_parallel(position_data, geometry, realizations, field_values, intera
             if scale_field == "ensemble":
                 # compute the ensembles mean J
                 ensemble_J_mean = np.mean([np.mean(np.sum(interaction.get_interaction(geom, position_data.loc[rho, i]), axis=1)) for i in range(realizations)])
+                print(f"Ensemble J mean for rhoi={rho}: {ensemble_J_mean}")
             for i in range(realizations):
                 model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
 
