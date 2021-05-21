@@ -60,7 +60,7 @@ def compute(position_data, geometry, realizations, field_values, interaction, in
         for i in range(realizations):
             simlib.log(f"{i:03d}/{realizations:03d}")
             model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
-            normed_field_values = field_values
+            normed_field_values = field_values[:]
             if scale_field == "shot":
                 normed_field_values *= model.J_mean
             elif scale_field == "ensemble":
@@ -109,7 +109,7 @@ def compute_parallel(position_data, geometry, realizations, field_values, intera
             for i in range(realizations):
                 model = sim.SpinModelSym(int_mat=interaction.get_interaction(geom, position_data.loc[rho, i]), int_type=int_type)
 
-                normed_field_values = field_values
+                normed_field_values = field_values[:]
                 if scale_field == "shot":
                     normed_field_values *= model.J_mean
                 elif scale_field == "ensemble":
